@@ -1,5 +1,7 @@
 import streamlit as st
 import pandas as pd
+from io import BytesIO
+import base64
 import os
 
 # Define dictionaries for scores
@@ -109,11 +111,9 @@ if st.button('Calculate CE Rating'):
 
     df_combined.to_csv(csv_file, index=False)
 
-    # Download button for the CSV
-    st.download_button(
-        label="Download all data as CSV",
-        data=df_combined.to_csv(index=False),
-        file_name='ce_rating_data.csv',
-        mime='text/csv'
-    )
+    # Download link for the CSV
+    csv = df_combined.to_csv(index=False)
+    b64 = base64.b64encode(csv.encode()).decode()
+    href = f'<a href="data:file/csv;base64,{b64}" download="ce_rating_data.csv">Download all data as CSV</a>'
+    st.markdown(href, unsafe_allow_html=True)
 
