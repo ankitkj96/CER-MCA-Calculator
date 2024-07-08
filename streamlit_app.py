@@ -1,4 +1,6 @@
 import streamlit as st
+import pandas as pd
+import os
 
 # Define dictionaries for scores
 issue_classification_scores = {
@@ -46,6 +48,9 @@ st.title('CE Rating Calculator')
 
 st.header('Input Data')
 
+auditor_name = st.text_input('Auditor Name', key='auditor_name')
+audit_name = st.text_input('Audit', key='audit_name')
+
 num_issues = st.number_input('Number of Issues', min_value=1, value=1)
 
 total_issue_classification_score = 0
@@ -81,3 +86,34 @@ if st.button('Calculate CE Rating'):
     st.write(f'Total Issue Classification Score: {total_issue_classification_score}')
     st.write(f'CE Rating: {ce_rating}')
     st.write(f'CE Rating Definition: {ce_rating_definition}')
+
+    # Create a DataFrame for the current input
+    data = {
+        'Auditor Name': [auditor_name],
+        'Audit': [audit_name],
+        'Total Issue Classification Score': [total_issue_classification_score],
+        'Area Impact Score': [area_impact_score],
+        'Key Control Failure Score': [key_control_failure_score_value],
+        'CE Rating': [ce_rating],
+        'CE Rating Definition': [ce_rating_definition]
+    }
+    df_current = pd.DataFrame(data)
+
+    # Append to CSV
+    csv_file = 'ce_rating_data.csv'
+    if os.path.exists(csv_file):
+        df_existing = pd.read_csv(csv_file)
+        df_combined = pd.concat([df_existing, df_current], ignore_index=True)
+    else:
+        df_combined = df_current
+
+    df_combined.to_csv(csv_file, index=False)
+
+    # Download button for the CSV
+    st.download_button(
+        label="Download all data as CSV",
+        data=df_combined.to_csv(index=False),
+        file_name='ce_rating_data.csv',
+        mime='text/csv'
+    )
+
