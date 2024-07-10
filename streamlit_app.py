@@ -28,11 +28,9 @@ def key_control_failure_score(value):
         return 0
 
 def calculate_ce_rating(total_issue_classification_score, area_impact_score, key_control_failure_score):
-    # Halve the area impact and key control failure scores
-    adjusted_area_impact_score = area_impact_score / 2
-    adjusted_key_control_failure_score = key_control_failure_score / 2
+   
     # Calculate total CE rating
-    total_ce_rating = total_issue_classification_score + adjusted_area_impact_score + adjusted_key_control_failure_score
+    total_ce_rating = total_issue_classification_score + area_impact_score + key_control_failure_score
     return total_ce_rating
 
 def get_ce_rating_definition(ce_rating):
