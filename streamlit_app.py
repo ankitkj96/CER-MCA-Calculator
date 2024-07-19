@@ -24,7 +24,7 @@ def key_control_failure_score(value):
         return 0
 
 def calculate_ce_rating(total_issue_classification_score, area_impact_score, key_control_failure_score):
-    # Calculate total CE rating without adjustment
+    # Calculate total CE rating
     total_ce_rating = total_issue_classification_score + area_impact_score + key_control_failure_score
     return total_ce_rating
 
@@ -77,20 +77,6 @@ for i in range(num_issues):
     )
     total_issue_classification_score += issue_classification_scores[issue_classification]
 
-    area_impact = st.selectbox(
-        f'Area Impact for Issue {i + 1}',
-        options=list(area_impact_scores.keys()),
-        key=f'area_impact_{i}'
-    )
-
-    key_control_failure = st.slider(
-        f'% of Key controls which have failed and contributed to findings in the audit report for Issue {i + 1}',
-        min_value=0,
-        max_value=100,
-        value=50,
-        key=f'key_control_failure_{i}'
-    )
-
     self_identified = st.radio(
         f'Was this issue self-identified for Issue {i + 1}?',
         ('Yes', 'No'),
@@ -134,10 +120,10 @@ key_control_failure = st.slider(
 )
 
 area_impact_score = area_impact_scores[area_impact]
-key_control_failure_score = key_control_failure_score(key_control_failure)
+key_control_failure_score_value = key_control_failure_score(key_control_failure)
 
 # Calculate CE Rating
-ce_rating = calculate_ce_rating(total_issue_classification_score, area_impact_score, key_control_failure_score)
+ce_rating = calculate_ce_rating(total_issue_classification_score, area_impact_score, key_control_failure_score_value)
 ce_rating_definition = get_ce_rating_definition(ce_rating)
 
 st.write(f'CE Rating: {ce_rating}')
