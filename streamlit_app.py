@@ -65,7 +65,7 @@ def calculate_mca_rating(management_awareness_score, action_plan_defined_score, 
 st.markdown("""
     <style>
     .title-section {
-        background: linear-gradient(to right, #00bfae, #0063f7);
+        background: linear-gradient(to right, #00bfae, #0063f6);
         padding: 10px;
         border-radius: 10px;
         color: white;
