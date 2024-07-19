@@ -1,5 +1,5 @@
 import streamlit as st
-st.image('Oaknorth_Logo.png', width=200)
+st.image('OakNorth_Logo.png', width=200)
 # Define dictionaries for scores
 issue_classification_scores = {
     'Severe': 125,
