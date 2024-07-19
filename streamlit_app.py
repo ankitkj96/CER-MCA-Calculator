@@ -1,8 +1,4 @@
 import streamlit as st
-import pandas as pd
-from io import BytesIO
-import base64
-import os
 
 # Define dictionaries for scores
 issue_classification_scores = {
@@ -28,8 +24,7 @@ def key_control_failure_score(value):
         return 0
 
 def calculate_ce_rating(total_issue_classification_score, area_impact_score, key_control_failure_score):
-   
-    # Calculate total CE rating
+    # Calculate total CE rating without adjustment
     total_ce_rating = total_issue_classification_score + area_impact_score + key_control_failure_score
     return total_ce_rating
 
@@ -43,17 +38,32 @@ def get_ce_rating_definition(ce_rating):
     else:
         return 'Weak'
 
-# Streamlit UI
-st.title('CE Rating Calculator')
+def calculate_management_awareness_score(percentage_self_identified):
+    if percentage_self_identified < 10:
+        return 102
+    elif 10 <= percentage_self_identified < 40:
+        return 26
+    elif 40 <= percentage_self_identified < 90:
+        return 6
+    else:
+        return 2
 
-st.header('Input Data')
+def calculate_mca_rating(management_awareness_score, action_plan_defined_score, ce_score):
+    if ce_score > 100:
+        return management_awareness_score
+    else:
+        return action_plan_defined_score
 
-auditor_name = st.text_input('Auditor Name', key='auditor_name')
-audit_name = st.text_input('Audit', key='audit_name')
+st.title('CE and MCA Rating Calculator')
+
+st.header('Input Data for CE Rating')
 
 num_issues = st.number_input('Number of Issues', min_value=1, value=1)
 
 total_issue_classification_score = 0
+total_action_plan_score = 0
+num_self_identified = 0
+
 for i in range(num_issues):
     st.subheader(f'Issue {i + 1}')
     issue_classification = st.selectbox(
@@ -63,55 +73,66 @@ for i in range(num_issues):
     )
     total_issue_classification_score += issue_classification_scores[issue_classification]
 
-area_impact = st.selectbox(
-    'Area Impact',
-    options=list(area_impact_scores.keys())
-)
+    area_impact = st.selectbox(
+        f'Area Impact for Issue {i + 1}',
+        options=list(area_impact_scores.keys()),
+        key=f'area_impact_{i}'
+    )
 
-key_control_failure = st.slider(
-    '% of Key controls which have failed and contributed to findings in the audit report',
-    min_value=0,
-    max_value=100,
-    value=50
-)
+    key_control_failure = st.slider(
+        f'% of Key controls which have failed and contributed to findings in the audit report for Issue {i + 1}',
+        min_value=0,
+        max_value=100,
+        value=50,
+        key=f'key_control_failure_{i}'
+    )
 
-if st.button('Calculate CE Rating'):
-    area_impact_score = area_impact_scores[area_impact]
-    key_control_failure_score_value = key_control_failure_score(key_control_failure)
+    self_identified = st.radio(
+        f'Was this issue self-identified for Issue {i + 1}?',
+        ('Yes', 'No'),
+        key=f'self_identified_{i}'
+    )
 
-    ce_rating = calculate_ce_rating(total_issue_classification_score, area_impact_score, key_control_failure_score_value)
-    ce_rating_definition = get_ce_rating_definition(ce_rating)
+    if self_identified == 'Yes':
+        num_self_identified += 1
 
-    st.subheader('Results')
-    st.write(f'Total Issue Classification Score: {total_issue_classification_score}')
-    st.write(f'CE Rating: {ce_rating}')
-    st.write(f'CE Rating Definition: {ce_rating_definition}')
+    action_plan_defined = st.selectbox(
+        f'Whether Action plan to close issues are clearly defined and monitored for Issue {i + 1}',
+        options=[
+            'Not defined and monitored',
+            'Somewhat defined but the progress is not monitored and the issues are open for more than one year',
+            'somewhat defined and progress is monitored and the issues are open for less than one year',
+            'well defined and tracked'
+        ],
+        key=f'action_plan_defined_{i}'
+    )
 
-    # Create a DataFrame for the current input
-    data = {
-        'Auditor Name': [auditor_name],
-        'Audit': [audit_name],
-        'Total Issue Classification Score': [total_issue_classification_score],
-        'Area Impact Score': [area_impact_score],
-        'Key Control Failure Score': [key_control_failure_score_value],
-        'CE Rating': [ce_rating],
-        'CE Rating Definition': [ce_rating_definition]
-    }
-    df_current = pd.DataFrame(data)
-
-    # Append to CSV
-    csv_file = 'ce_rating_data.csv'
-    if os.path.exists(csv_file):
-        df_existing = pd.read_csv(csv_file)
-        df_combined = pd.concat([df_existing, df_current], ignore_index=True)
+    if action_plan_defined == 'Not defined and monitored':
+        total_action_plan_score += 102
+    elif action_plan_defined == 'Somewhat defined but the progress is not monitored and the issues are open for more than one year':
+        total_action_plan_score += 26
+    elif action_plan_defined == 'somewhat defined and progress is monitored and the issues are open for less than one year':
+        total_action_plan_score += 6
     else:
-        df_combined = df_current
+        total_action_plan_score += 2
 
-    df_combined.to_csv(csv_file, index=False)
+area_impact_score = area_impact_scores[area_impact]
+key_control_failure_score = key_control_failure_score(key_control_failure)
 
-    # Download link for the CSV
-    csv = df_combined.to_csv(index=False)
-    b64 = base64.b64encode(csv.encode()).decode()
-    href = f'<a href="data:file/csv;base64,{b64}" download="ce_rating_data.csv">Download all data as CSV</a>'
-    st.markdown(href, unsafe_allow_html=True)
+# Calculate CE Rating
+ce_rating = calculate_ce_rating(total_issue_classification_score, area_impact_score, key_control_failure_score)
+ce_rating_definition = get_ce_rating_definition(ce_rating)
 
+st.write(f'CE Rating: {ce_rating}')
+st.write(f'CE Rating Definition: {ce_rating_definition}')
+
+# Calculate Management Awareness Score
+percentage_self_identified = (num_self_identified / num_issues) * 100
+management_awareness_score = calculate_management_awareness_score(percentage_self_identified)
+
+# Calculate MCA Rating
+mca_rating = calculate_mca_rating(management_awareness_score, total_action_plan_score, ce_rating)
+mca_rating_definition = 'Strong' if mca_rating <= 25 else 'Satisfactory with exceptions' if mca_rating <= 50 else 'Needs Improvement' if mca_rating <= 100 else 'Weak'
+
+st.write(f'MCA Rating: {mca_rating}')
+st.write(f'MCA Rating Definition: {mca_rating_definition}')
