@@ -1,3 +1,111 @@
+import streamlit as st
+import pandas as pd
+from io import BytesIO
+import base64
+import os
+
+# Display logo at the top
+st.image('OakNorth_Logo.png', width=200)  # Adjust width as needed
+
+# Define dictionaries for scores
+issue_classification_scores = {
+    'Severe': 125,
+    'High': 25,
+    'Medium': 5
+}
+
+area_impact_scores = {
+    'Spread across almost all areas of the Bank': 62.5,
+    'Spread across multiple areas of the Bank': 12.5,
+    'Spread across limited areas of the Bank': 2.5
+}
+
+def key_control_failure_score(value):
+    if value >= 80:
+        return 62.5
+    elif 40 <= value < 80:
+        return 12.5
+    elif value < 40:
+        return 2.5
+    else:
+        return 0
+
+def calculate_ce_rating(total_issue_classification_score, area_impact_score, key_control_failure_score):
+    # Calculate total CE rating
+    total_ce_rating = total_issue_classification_score + area_impact_score + key_control_failure_score
+    return total_ce_rating
+
+def get_ce_rating_definition(ce_rating):
+    if ce_rating <= 50:
+        return 'Strong'
+    elif 51 <= ce_rating <= 99:
+        return 'Satisfactory with exceptions'
+    elif 100 <= ce_rating <= 250:
+        return 'Needs Improvement'
+    else:
+        return 'Weak'
+
+def calculate_management_awareness_score(percentage_self_identified):
+    if percentage_self_identified < 10:
+        return 102
+    elif 10 <= percentage_self_identified < 40:
+        return 26
+    elif 40 <= percentage_self_identified < 90:
+        return 6
+    else:
+        return 2
+
+def calculate_mca_rating(management_awareness_score, action_plan_defined_score, ce_score):
+    if ce_score > 100:
+        return management_awareness_score
+    else:
+        return action_plan_defined_score
+
+# Title section with gradient background
+st.markdown("""
+    <style>
+    .title-section {
+        background: linear-gradient(to right, #00bfae, #0063f7);
+        padding: 10px;
+        border-radius: 10px;
+        color: white;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    </style>
+    <div class="title-section">
+        <h1>CE and MCA Rating Calculator</h1>
+    </div>
+""", unsafe_allow_html=True)
+
+# Input section
+st.header('Audit Information')
+audit_name = st.text_input('Audit Name')
+auditor_name = st.text_input('Auditor Name')
+
+st.header('Input Data for CE Rating')
+num_issues = st.number_input('Number of Issues', min_value=1, value=1)
+
+total_issue_classification_score = 0
+num_self_identified = 0
+
+for i in range(num_issues):
+    st.subheader(f'Issue {i + 1}')
+    issue_classification = st.selectbox(
+        f'Issue Classification for Issue {i + 1}',
+        options=list(issue_classification_scores.keys()),
+        key=f'issue_classification_{i}'
+    )
+    total_issue_classification_score += issue_classification_scores[issue_classification]
+
+    self_identified = st.radio(
+        f'Was this issue self-identified for Issue {i + 1}?',
+        ('Yes', 'No'),
+        key=f'self_identified_{i}'
+    )
+    if self_identified == 'Yes':
+        num_self_identified += 1
+
 st.subheader('Overall Scores for the Audit')
 
 # Input for area impact and key control failure (for the entire audit)
@@ -71,7 +179,7 @@ data = {
     'Total number of issues': [num_issues],
     'Action Planning Rating': [total_action_plan_score],
     'Number of self-identified issues': [num_self_identified],
-    'CE Rating': [ce_rating],
+    'CE Rating Value': [ce_rating],
 }
 
 df_current = pd.DataFrame(data)
