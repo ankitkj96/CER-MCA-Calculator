@@ -24,7 +24,7 @@ def key_control_failure_score(value):
         return 0
 
 def calculate_ce_rating(total_issue_classification_score, area_impact_score, key_control_failure_score):
-    # Calculate total CE rating without adjustment
+    # Calculate total CE rating
     total_ce_rating = total_issue_classification_score + area_impact_score + key_control_failure_score
     return total_ce_rating
 
@@ -56,6 +56,10 @@ def calculate_mca_rating(management_awareness_score, action_plan_defined_score, 
 
 st.title('CE and MCA Rating Calculator')
 
+st.header('Audit Information')
+audit_name = st.text_input('Audit Name')
+auditor_name = st.text_input('Auditor Name')
+
 st.header('Input Data for CE Rating')
 
 num_issues = st.number_input('Number of Issues', min_value=1, value=1)
@@ -72,20 +76,6 @@ for i in range(num_issues):
         key=f'issue_classification_{i}'
     )
     total_issue_classification_score += issue_classification_scores[issue_classification]
-
-    area_impact = st.selectbox(
-        f'Area Impact for Issue {i + 1}',
-        options=list(area_impact_scores.keys()),
-        key=f'area_impact_{i}'
-    )
-
-    key_control_failure = st.slider(
-        f'% of Key controls which have failed and contributed to findings in the audit report for Issue {i + 1}',
-        min_value=0,
-        max_value=100,
-        value=50,
-        key=f'key_control_failure_{i}'
-    )
 
     self_identified = st.radio(
         f'Was this issue self-identified for Issue {i + 1}?',
@@ -116,11 +106,24 @@ for i in range(num_issues):
     else:
         total_action_plan_score += 2
 
+st.subheader('Overall Scores for the Audit')
+area_impact = st.selectbox(
+    'Area Impact for the entire audit',
+    options=list(area_impact_scores.keys())
+)
+
+key_control_failure = st.slider(
+    '% of Key controls which have failed and contributed to findings in the audit report',
+    min_value=0,
+    max_value=100,
+    value=50
+)
+
 area_impact_score = area_impact_scores[area_impact]
-key_control_failure_score = key_control_failure_score(key_control_failure)
+key_control_failure_score_value = key_control_failure_score(key_control_failure)
 
 # Calculate CE Rating
-ce_rating = calculate_ce_rating(total_issue_classification_score, area_impact_score, key_control_failure_score)
+ce_rating = calculate_ce_rating(total_issue_classification_score, area_impact_score, key_control_failure_score_value)
 ce_rating_definition = get_ce_rating_definition(ce_rating)
 
 st.write(f'CE Rating: {ce_rating}')
@@ -136,3 +139,6 @@ mca_rating_definition = 'Strong' if mca_rating <= 25 else 'Satisfactory with exc
 
 st.write(f'MCA Rating: {mca_rating}')
 st.write(f'MCA Rating Definition: {mca_rating_definition}')
+
+st.write(f'Audit Name: {audit_name}')
+st.write(f'Auditor Name: {auditor_name}')
