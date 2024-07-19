@@ -1,7 +1,7 @@
 import streamlit as st
 
 # Display logo at the top
-st.image('OakNorth_Logo', width=200)  # Adjust width as needed
+st.image('OakNorth_Logo.png', width=200)  # Adjust width as needed
 
 # Define dictionaries for scores
 issue_classification_scores = {
