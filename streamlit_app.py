@@ -1,16 +1,5 @@
 import streamlit as st
-st.markdown(
-    """
-    <style>
-    .stApp {
-        background: linear-gradient(to right, #00c6ff, #0072ff); /* Green to Blue gradient */
-        color: #ffffff; /* Optional: Set text color to white for better contrast */
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-st.image('Oaknorth_Logo.png', width=200) 
+ 
 # Define dictionaries for scores
 issue_classification_scores = {
     'Severe': 125,
