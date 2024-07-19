@@ -1,42 +1,63 @@
 import streamlit as st
 
-# Add CSS for the title section with gradient background and white background for the rest of the app
-st.markdown(
-    """
-    <style>
-    .title-section {
-        background: linear-gradient(to right, #00c6ff, #0072ff); /* Green to Blue gradient */
-        color: #ffffff; /* White text color */
-        padding: 20px;
-        border-radius: 8px;
-        text-align: center;
-    }
-    .main-app {
-        background: #ffffff; /* White background for the rest of the app */
-        padding: 20px;
-    }
-    .section-title {
-        font-size: 1.5em;
-        font-weight: bold;
-        color: #ffffff; /* White text color for the section title */
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+# Display logo at the top
+st.image('OakNorth_Logo', width=200)  # Adjust width as needed
 
-# Create a gradient section for the title
-st.markdown(
-    """
-    <div class="title-section">
-        <div class="section-title">CE and MCA Rating Calculator</div>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+# Define dictionaries for scores
+issue_classification_scores = {
+    'Severe': 125,
+    'High': 25,
+    'Medium': 5
+}
 
-# Add the rest of the content in the main app section
-st.markdown('<div class="main-app">', unsafe_allow_html=True)
+area_impact_scores = {
+    'Spread across almost all areas of the Bank': 62.5,
+    'Spread across multiple areas of the Bank': 12.5,
+    'Spread across limited areas of the Bank': 2.5
+}
+
+def key_control_failure_score(value):
+    if value >= 80:
+        return 62.5
+    elif 40 <= value < 80:
+        return 12.5
+    elif value < 40:
+        return 2.5
+    else:
+        return 0
+
+def calculate_ce_rating(total_issue_classification_score, area_impact_score, key_control_failure_score):
+    # Calculate total CE rating
+    total_ce_rating = total_issue_classification_score + area_impact_score + key_control_failure_score
+    return total_ce_rating
+
+def get_ce_rating_definition(ce_rating):
+    if ce_rating <= 50:
+        return 'Strong'
+    elif 51 <= ce_rating <= 99:
+        return 'Satisfactory with exceptions'
+    elif 100 <= ce_rating <= 250:
+        return 'Needs Improvement'
+    else:
+        return 'Weak'
+
+def calculate_management_awareness_score(percentage_self_identified):
+    if percentage_self_identified < 10:
+        return 102
+    elif 10 <= percentage_self_identified < 40:
+        return 26
+    elif 40 <= percentage_self_identified < 90:
+        return 6
+    else:
+        return 2
+
+def calculate_mca_rating(management_awareness_score, action_plan_defined_score, ce_score):
+    if ce_score > 100:
+        return management_awareness_score
+    else:
+        return action_plan_defined_score
+
+st.title('CE and MCA Rating Calculator')
 
 st.header('Audit Information')
 audit_name = st.text_input('Audit Name')
@@ -125,4 +146,3 @@ st.write(f'MCA Rating Definition: {mca_rating_definition}')
 st.write(f'Audit Name: {audit_name}')
 st.write(f'Auditor Name: {auditor_name}')
 
-st.markdown('</div>', unsafe_allow_html=True)
