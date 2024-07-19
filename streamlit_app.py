@@ -1,5 +1,5 @@
 import streamlit as st
-
+st.image('https://github.com/ankitkj96/Oaknorth Logo.jpg', width=200) 
 # Define dictionaries for scores
 issue_classification_scores = {
     'Severe': 125,
@@ -54,7 +54,7 @@ def calculate_mca_rating(management_awareness_score, action_plan_defined_score, 
     else:
         return action_plan_defined_score
 
-st.title('CE and MCA Rating Calculator')
+st.title('IA Team - CE and MCA Rating Calculator')
 
 st.header('Audit Information')
 audit_name = st.text_input('Audit Name')
