@@ -62,21 +62,7 @@ def calculate_mca_rating(management_awareness_score, action_plan_defined_score, 
         return action_plan_defined_score
 
 # Title section with gradient background
-st.markdown("""
-    <style>
-    .title-section {
-        background: linear-gradient(to right, #00bfae, #0063f6);
-        padding: 10px;
-        border-radius: 10px;
-        color: white;
-        text-align: center;
-        margin-bottom: 20px;
-    }
-    </style>
-    <div class="title-section">
-        <h1>CE and MCA Rating Calculator</h1>
-    </div>
-""", unsafe_allow_html=True)
+st.title('IA CE and MCA Calculator')
 
 # Input section
 st.header('Audit Information')
