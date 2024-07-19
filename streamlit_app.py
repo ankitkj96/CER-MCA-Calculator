@@ -1,4 +1,27 @@
 import streamlit as st
+st.markdown(
+    """
+    <style>
+    .title-section {
+        background: linear-gradient(to right, #00c6ff, #0072ff); /* Green to Blue gradient */
+        color: #ffffff; /* White text color */
+        padding: 20px;
+        border-radius: 8px;
+        text-align: center;
+    }
+    .main-app {
+        background: #ffffff; /* White background for the rest of the app */
+        padding: 20px;
+    }
+    .section-title {
+        font-size: 1.5em;
+        font-weight: bold;
+        color: #ffffff; /* White text color for the section title */
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 st.image('OakNorth_Logo.png', width=200)
 # Define dictionaries for scores
 issue_classification_scores = {
