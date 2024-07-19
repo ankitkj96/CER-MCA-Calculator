@@ -120,11 +120,23 @@ for i in range(num_issues):
     else:
         total_action_plan_score += 2
 
+area_impact = st.selectbox(
+    'Area Impact for the entire audit',
+    options=list(area_impact_scores.keys())
+)
+
+key_control_failure = st.slider(
+    '% of Key controls which have failed and contributed to findings in the audit report',
+    min_value=0,
+    max_value=100,
+    value=50
+)
+
 area_impact_score = area_impact_scores[area_impact]
-key_control_failure_score = key_control_failure_score(key_control_failure)
+key_control_failure_score_value = key_control_failure_score(key_control_failure)
 
 # Calculate CE Rating
-ce_rating = calculate_ce_rating(total_issue_classification_score, area_impact_score, key_control_failure_score)
+ce_rating = calculate_ce_rating(total_issue_classification_score, area_impact_score, key_control_failure_score_value)
 ce_rating_definition = get_ce_rating_definition(ce_rating)
 
 st.write(f'CE Rating: {ce_rating}')
@@ -142,30 +154,33 @@ st.write(f'MCA Rating: {mca_rating}')
 st.write(f'MCA Rating Definition: {mca_rating_definition}')
 
 data = {
-        'Auditor Name': [auditor_name],
-        'Audit': [audit_name],
-        'CE Rating': [ce_rating_definition],
-        'MCA Rating' : [mca_rating_definition],
-        'Total Issue Classification Score': [total_issue_classification_score],
-        'Area Impact Score': [area_impact_score],
-        'Key Control Failure Score': [key_control_failure_score_value],
-        'Total number of issues' : [num_issues],
-        'Action Planning Rating' : [total_action_plan_score],
-        'Number of self identified issues' : [num_self_identified],
-        'CE Rating': [ce_rating],
-        
-    }
-    df_current = pd.DataFrame(data)
-    # Append to CSV
-    csv_file = 'ce_rating_data.csv'
-    if os.path.exists(csv_file):
-        df_existing = pd.read_csv(csv_file)
-        df_combined = pd.concat([df_existing, df_current], ignore_index=True)
-    else:
-        df_combined = df_current
-    df_combined.to_csv(csv_file, index=False)
-    # Download link for the CSV
-    csv = df_combined.to_csv(index=False)
-    b64 = base64.b64encode(csv.encode()).decode()
-    href = f'<a href="data:file/csv;base64,{b64}" download="ce_rating_data.csv">Download all data as CSV</a>'
-    st.markdown(href, unsafe_allow_html=True)
+    'Auditor Name': [auditor_name],
+    'Audit': [audit_name],
+    'CE Rating': [ce_rating_definition],
+    'MCA Rating': [mca_rating_definition],
+    'Total Issue Classification Score': [total_issue_classification_score],
+    'Area Impact Score': [area_impact_score],
+    'Key Control Failure Score': [key_control_failure_score_value],
+    'Total number of issues': [num_issues],
+    'Action Planning Rating': [total_action_plan_score],
+    'Number of self-identified issues': [num_self_identified],
+    'CE Rating': [ce_rating],
+}
+
+df_current = pd.DataFrame(data)
+
+# Append to CSV
+csv_file = 'ce_rating_data.csv'
+if os.path.exists(csv_file):
+    df_existing = pd.read_csv(csv_file)
+    df_combined = pd.concat([df_existing, df_current], ignore_index=True)
+else:
+    df_combined = df_current
+
+df_combined.to_csv(csv_file, index=False)
+
+# Download link for the CSV
+csv = df_combined.to_csv(index=False)
+b64 = base64.b64encode(csv.encode()).decode()
+href = f'<a href="data:file/csv;base64,{b64}" download="ce_rating_data.csv">Download all data as CSV</a>'
+st.markdown(href, unsafe_allow_html=True)
