@@ -10,7 +10,7 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-st.image('Oaknorth Logo.jpg', width=200) 
+st.image('Oaknorth_Logo.png', width=200) 
 # Define dictionaries for scores
 issue_classification_scores = {
     'Severe': 125,
