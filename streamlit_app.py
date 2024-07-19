@@ -1,5 +1,5 @@
 import streamlit as st
-st.image('https://www.bing.com/images/search?view=detailV2&ccid=4Oo1%2bwej&id=1F4ABCE829A31EBB26DB82789A4BA998B52A2285&thid=OIP.4Oo1-wejZ6Z56taGADX7ywHaCa&mediaurl=https%3a%2f%2fwww.thepower50.com%2fwp-content%2fuploads%2f2020%2f04%2foaknorth-bank-logo-colour_5fa6678a-d5ba-42ab-bec8-000ec4b7ac3f1.png&exph=512&expw=1568&q=oaknorth+logo+png&simid=608020701093048571&FORM=IRPRST&ck=B1F98DFCDB5FA5C0791DB1A165C9D00B&selectedIndex=0&itb=1&idpp=overlayview&ajaxhist=0&ajaxserp=0', width=200) 
+st.image('Oaknorth Logo.jpg', width=200) 
 # Define dictionaries for scores
 issue_classification_scores = {
     'Severe': 125,
