@@ -1,4 +1,6 @@
 import streamlit as st
+
+# Add CSS for the title section with gradient background and white background for the rest of the app
 st.markdown(
     """
     <style>
@@ -8,21 +10,31 @@ st.markdown(
         padding: 20px;
         border-radius: 8px;
         text-align: center;
+        font-size: 2em;
+        font-weight: bold;
     }
     .main-app {
         background: #ffffff; /* White background for the rest of the app */
         padding: 20px;
     }
-    .section-title {
-        font-size: 1.5em;
-        font-weight: bold;
-        color: #ffffff; /* White text color for the section title */
-    }
     </style>
     """,
     unsafe_allow_html=True
 )
-st.image('OakNorth_Logo.png', width=200)
+
+# Create a gradient section for the title
+st.markdown(
+    """
+    <div class="title-section">
+        IA Team - CE and MCA Rating Calculator
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+# Add the rest of the content in the main app section
+st.markdown('<div class="main-app">', unsafe_allow_html=True)
+
 # Define dictionaries for scores
 issue_classification_scores = {
     'Severe': 125,
@@ -76,8 +88,6 @@ def calculate_mca_rating(management_awareness_score, action_plan_defined_score, 
         return management_awareness_score
     else:
         return action_plan_defined_score
-
-st.title('IA Team - CE and MCA Rating Calculator')
 
 st.header('Audit Information')
 audit_name = st.text_input('Audit Name')
@@ -165,3 +175,5 @@ st.write(f'MCA Rating Definition: {mca_rating_definition}')
 
 st.write(f'Audit Name: {audit_name}')
 st.write(f'Auditor Name: {auditor_name}')
+
+st.markdown('</div>', unsafe_allow_html=True)
