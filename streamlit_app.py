@@ -125,7 +125,6 @@ for i in range(num_issues):
     if self_identified == 'Yes':
         num_self_identified += 1
 
-    if self_identified == 'Yes':
         action_plan_defined = st.selectbox(
             f'Whether Action plan to close issues are clearly defined and monitored for Issue {i + 1}',
             options=[
@@ -144,7 +143,8 @@ for i in range(num_issues):
             'Not supportive and action plans are not provided till issuance of the report',
             'Somewhat supportive and action plans were shared within defined timelines',
             'Management was fully supportive and focused on the remediation of the problems on an immediate basis'
-        ]
+        ],
+        key='management_support'
     )
 
 st.subheader('Overall Scores for the Audit')
@@ -208,23 +208,12 @@ data = {
     'Area Impact Score': [area_impact_score],
     'Key Control Failure Score': [key_control_failure_score_value],
     'Total number of issues': [num_issues],
-    'Action Planning Rating': [action_plan_score],
-    'Number of self-identified issues': [num_self_identified],
-    'CE Rating Value': [ce_rating],
-    'MCA Rating Value': [mca_rating]
+    'Percentage of Self-Identified Issues': [percentage_self_identified],
+    'Action Plan Score': [action_plan_score],
+    'Management Support Score': [management_support_score]
 }
 
-df_current = pd.DataFrame(data)
-
-# Append to CSV
-csv_file = 'ce_rating_data.csv'
-if os.path.exists(csv_file):
-    df_existing = pd.read_csv(csv_file)
-    df_combined = pd.concat([df_existing, df_current], ignore_index=True)
-else:
-    df_combined = df_current
-
-df_combined.to_csv(csv_file, index=False)
+df_combined = pd.DataFrame(data)
 
 # Download link for the CSV
 csv = df_combined.to_csv(index=False)
