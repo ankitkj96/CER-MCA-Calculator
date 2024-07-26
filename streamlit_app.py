@@ -1,7 +1,5 @@
 import streamlit as st
 import pandas as pd
-import base64
-import os
 
 # Display logo at the top
 st.image('OakNorth_Logo.png', width=200)  # Adjust width as needed
@@ -96,11 +94,11 @@ def rating_style(rating_definition):
 
 st.title('CE and MCA Rating Calculator')
 st.header('Audit Information')
-audit_name = st.text_input('Audit Name')
-auditor_name = st.text_input('Auditor Name')
+audit_name = st.text_input('Audit Name', key='audit_name')
+auditor_name = st.text_input('Auditor Name', key='auditor_name')
 
 st.header('Input Data for CE Rating')
-num_issues = st.number_input('Number of Issues', min_value=1, value=1)
+num_issues = st.number_input('Number of Issues', min_value=1, value=1, key='num_issues')
 
 total_issue_classification_score = 0
 total_action_plan_score = 0
@@ -110,6 +108,7 @@ management_support = None
 
 for i in range(num_issues):
     st.subheader(f'Issue {i + 1}')
+    
     issue_classification = st.selectbox(
         f'Issue Classification for Issue {i + 1}',
         options=list(issue_classification_scores.keys()),
@@ -119,7 +118,7 @@ for i in range(num_issues):
 
     self_identified = st.radio(
         f'Was this issue self-identified for Issue {i + 1}?',
-        ('Yes', 'No'),
+        options=['Yes', 'No'],
         key=f'self_identified_{i}'
     )
     if self_identified == 'Yes':
@@ -150,13 +149,15 @@ for i in range(num_issues):
 st.subheader('Overall Scores for the Audit')
 area_impact = st.selectbox(
     'Area Impact for the entire audit',
-    options=list(area_impact_scores.keys())
+    options=list(area_impact_scores.keys()),
+    key='area_impact'
 )
 key_control_failure = st.slider(
     '% of Key controls which have failed and contributed to findings in the audit report',
     min_value=0,
     max_value=100,
-    value=50
+    value=50,
+    key='key_control_failure'
 )
 area_impact_score = area_impact_scores[area_impact]
 key_control_failure_score_value = key_control_failure_score(key_control_failure)
@@ -215,8 +216,12 @@ data = {
 
 df_combined = pd.DataFrame(data)
 
-# Download link for the CSV
-csv = df_combined.to_csv(index=False)
-b64 = base64.b64encode(csv.encode()).decode()
-href = f'<a href="data:file/csv;base64,{b64}" download="ce_rating_data.csv">Download all data as CSV</a>'
-st.markdown(href, unsafe_allow_html=True)
+# Function to convert dataframe to CSV
+def to_csv(df):
+    csv = df.to_csv(index=False)
+    b64 = base64.b64encode(csv.encode()).decode()  # some encoding
+    href = f'<a href="data:file/csv;base64,{b64}" download="audit_data.csv">Download CSV file</a>'
+    return href
+
+# Display CSV download link
+st.markdown(to_csv(df_combined), unsafe_allow_html=True)
