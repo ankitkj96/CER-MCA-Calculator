@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import base64
 
 # Display logo at the top
 st.image('OakNorth_Logo.png', width=200)  # Adjust width as needed
@@ -82,15 +83,6 @@ def get_mca_rating_definition(mca_rating):
         return 'Needs Improvement'
     else:
         return 'Weak'
-
-def rating_style(rating_definition):
-    styles = {
-        'Strong': 'background-color: darkgreen; color: white; font-weight: bold; border-radius: 10px; padding: 10px; box-shadow: 2px 2px 5px #666;',
-        'Satisfactory with exceptions': 'background-color: lightgreen; color: white; font-weight: bold; border-radius: 10px; padding: 10px; box-shadow: 2px 2px 5px #666;',
-        'Needs Improvement': 'background-color: darkorange; color: white; font-weight: bold; border-radius: 10px; padding: 10px; box-shadow: 2px 2px 5px #666;',
-        'Weak': 'background-color: red; color: white; font-weight: bold; border-radius: 10px; padding: 10px; box-shadow: 2px 2px 5px #666;',
-    }
-    return styles.get(rating_definition, '')
 
 st.title('CE and MCA Rating Calculator')
 st.header('Audit Information')
@@ -178,24 +170,12 @@ mca_rating = calculate_mca_rating(management_awareness_score, action_plan_score,
 mca_rating_definition = get_mca_rating_definition(mca_rating)
 
 # Display CE Rating
-st.markdown(f"""
-    <div style="{rating_style(ce_rating_definition)}">
-        CE Rating: <strong>{ce_rating_definition}</strong>
-    </div>
-    <div style="text-align: center; margin-top: 10px;">
-        <strong>CE Rating Value: {ce_rating}</strong>
-    </div>
-""", unsafe_allow_html=True)
+st.write(f'**CE Rating:** {ce_rating_definition}')
+st.write(f'**CE Rating Value:** {ce_rating}')
 
 # Display MCA Rating
-st.markdown(f"""
-    <div style="{rating_style(mca_rating_definition)}">
-        MCA Rating: <strong>{mca_rating_definition}</strong>
-    </div>
-    <div style="text-align: center; margin-top: 10px;">
-        <strong>MCA Rating Value: {mca_rating}</strong>
-    </div>
-""", unsafe_allow_html=True)
+st.write(f'**MCA Rating:** {mca_rating_definition}')
+st.write(f'**MCA Rating Value:** {mca_rating}')
 
 st.write(f'Audit Name: {audit_name}')
 st.write(f'Auditor Name: {auditor_name}')
