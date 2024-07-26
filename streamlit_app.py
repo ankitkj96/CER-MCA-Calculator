@@ -43,12 +43,10 @@ def get_ce_rating_definition(ce_rating):
         return 'Weak'
 
 def calculate_management_awareness_score(percentage_self_identified):
-    if percentage_self_identified < 10:
+    if percentage_self_identified < 40:
         return 83
-    elif 10 <= percentage_self_identified < 40:
-        return 17
     elif 40 <= percentage_self_identified < 80:
-        return 6
+        return 17
     else:
         return 3
 
