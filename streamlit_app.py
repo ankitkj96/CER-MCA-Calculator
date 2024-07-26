@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-from io import BytesIO
 import base64
 import os
 
@@ -13,7 +12,6 @@ issue_classification_scores = {
     'High': 25,
     'Medium': 5
 }
-
 area_impact_scores = {
     'Spread across almost all areas of the Bank': 62.5,
     'Spread across multiple areas of the Bank': 12.5,
@@ -47,24 +45,56 @@ def get_ce_rating_definition(ce_rating):
 
 def calculate_management_awareness_score(percentage_self_identified):
     if percentage_self_identified < 10:
-        return 102
+        return 83
     elif 10 <= percentage_self_identified < 40:
-        return 26
-    elif 40 <= percentage_self_identified < 90:
+        return 17
+    elif 40 <= percentage_self_identified < 80:
         return 6
     else:
-        return 2
+        return 3
 
-def calculate_mca_rating(management_awareness_score, action_plan_defined_score, ce_score):
-    if ce_score > 100:
-        return management_awareness_score
+def get_action_plan_score(action_plan_defined):
+    if action_plan_defined == 'Not defined and monitored or issues are open for more than 1 year':
+        return 83
+    elif action_plan_defined == 'Somewhat defined but the progress is not monitored or issues are open for between 6 months to 12 months':
+        return 17
     else:
-        return action_plan_defined_score
+        return 3
 
-# Title section with gradient background
-st.title('IA CE and MCA Calculator')
+def get_management_support_score(management_support):
+    if management_support == 'Not supportive and action plans are not provided till issuance of the report':
+        return 83
+    elif management_support == 'Somewhat supportive and action plans were shared within defined timelines':
+        return 17
+    else:
+        return 3
 
-# Input section
+def calculate_mca_rating(management_awareness_score, action_plan_defined_score, management_support_score, ce_score):
+    if ce_score > 100:
+        return management_awareness_score + action_plan_defined_score + management_support_score
+    else:
+        return management_awareness_score
+
+def get_mca_rating_definition(mca_rating):
+    if mca_rating <= 50:
+        return 'Strong'
+    elif 51 <= mca_rating <= 99:
+        return 'Satisfactory with exceptions'
+    elif 100 <= mca_rating <= 250:
+        return 'Needs Improvement'
+    else:
+        return 'Weak'
+
+def rating_style(rating_definition):
+    styles = {
+        'Strong': 'background-color: darkgreen; color: white; font-weight: bold; border-radius: 10px; padding: 10px; box-shadow: 2px 2px 5px #666;',
+        'Satisfactory with exceptions': 'background-color: lightgreen; color: white; font-weight: bold; border-radius: 10px; padding: 10px; box-shadow: 2px 2px 5px #666;',
+        'Needs Improvement': 'background-color: darkorange; color: white; font-weight: bold; border-radius: 10px; padding: 10px; box-shadow: 2px 2px 5px #666;',
+        'Weak': 'background-color: red; color: white; font-weight: bold; border-radius: 10px; padding: 10px; box-shadow: 2px 2px 5px #666;',
+    }
+    return styles.get(rating_definition, '')
+
+st.title('CE and MCA Rating Calculator')
 st.header('Audit Information')
 audit_name = st.text_input('Audit Name')
 auditor_name = st.text_input('Auditor Name')
@@ -73,7 +103,10 @@ st.header('Input Data for CE Rating')
 num_issues = st.number_input('Number of Issues', min_value=1, value=1)
 
 total_issue_classification_score = 0
+total_action_plan_score = 0
 num_self_identified = 0
+action_plan_defined = None
+management_support = None
 
 for i in range(num_issues):
     st.subheader(f'Issue {i + 1}')
@@ -92,68 +125,80 @@ for i in range(num_issues):
     if self_identified == 'Yes':
         num_self_identified += 1
 
-st.subheader('Overall Scores for the Audit')
+    if self_identified == 'Yes':
+        action_plan_defined = st.selectbox(
+            f'Whether Action plan to close issues are clearly defined and monitored for Issue {i + 1}',
+            options=[
+                'Not defined and monitored or issues are open for more than 1 year',
+                'Somewhat defined but the progress is not monitored or issues are open for between 6 months to 12 months',
+                'Well defined and tracked'
+            ],
+            key=f'action_plan_defined_{i}'
+        )
+        if action_plan_defined:
+            total_action_plan_score += get_action_plan_score(action_plan_defined)
 
-# Input for area impact and key control failure (for the entire audit)
+    management_support = st.selectbox(
+        'Management support during audit',
+        options=[
+            'Not supportive and action plans are not provided till issuance of the report',
+            'Somewhat supportive and action plans were shared within defined timelines',
+            'Management was fully supportive and focused on the remediation of the problems on an immediate basis'
+        ]
+    )
+
+st.subheader('Overall Scores for the Audit')
 area_impact = st.selectbox(
     'Area Impact for the entire audit',
     options=list(area_impact_scores.keys())
 )
-
 key_control_failure = st.slider(
     '% of Key controls which have failed and contributed to findings in the audit report',
     min_value=0,
     max_value=100,
     value=50
 )
-
-# Calculate scores
 area_impact_score = area_impact_scores[area_impact]
 key_control_failure_score_value = key_control_failure_score(key_control_failure)
-
-# Determine Action Plan Score based on self-identified issues
-if num_self_identified > 0:
-    action_plan_defined = st.selectbox(
-        'Whether Action plan to close issues is clearly defined and monitored',
-        options=[
-            'Not defined and monitored',
-            'Somewhat defined but the progress is not monitored and the issues are open for more than one year',
-            'Somewhat defined and progress is monitored and the issues are open for less than one year',
-            'Well defined and tracked'
-        ]
-    )
-    if action_plan_defined == 'Not defined and monitored':
-        total_action_plan_score = 102
-    elif action_plan_defined == 'Somewhat defined but the progress is not monitored and the issues are open for more than one year':
-        total_action_plan_score = 26
-    elif action_plan_defined == 'Somewhat defined and progress is monitored and the issues are open for less than one year':
-        total_action_plan_score = 6
-    else:
-        total_action_plan_score = 2
-else:
-    total_action_plan_score = 0
 
 # Calculate CE Rating
 ce_rating = calculate_ce_rating(total_issue_classification_score, area_impact_score, key_control_failure_score_value)
 ce_rating_definition = get_ce_rating_definition(ce_rating)
-st.write(f'CE Rating: {ce_rating}')
-st.write(f'CE Rating Definition: {ce_rating_definition}')
 
 # Calculate Management Awareness Score
 percentage_self_identified = (num_self_identified / num_issues) * 100
 management_awareness_score = calculate_management_awareness_score(percentage_self_identified)
 
 # Calculate MCA Rating
-mca_rating = calculate_mca_rating(management_awareness_score, total_action_plan_score, ce_rating)
-mca_rating_definition = 'Strong' if mca_rating <= 25 else 'Satisfactory with exceptions' if mca_rating <= 50 else 'Needs Improvement' if mca_rating <= 100 else 'Weak'
-st.write(f'MCA Rating: {mca_rating}')
-st.write(f'MCA Rating Definition: {mca_rating_definition}')
+action_plan_score = get_action_plan_score(action_plan_defined) if action_plan_defined else 0
+management_support_score = get_management_support_score(management_support) if management_support else 0
 
-# Display audit information
+mca_rating = calculate_mca_rating(management_awareness_score, action_plan_score, management_support_score, ce_rating)
+mca_rating_definition = get_mca_rating_definition(mca_rating)
+
+# Display CE Rating
+st.markdown(f"""
+    <div style="{rating_style(ce_rating_definition)}">
+        CE Rating: <strong>{ce_rating_definition}</strong>
+    </div>
+    <div style="text-align: center; margin-top: 10px;">
+        <strong>CE Rating Value: {ce_rating}</strong>
+    </div>
+""", unsafe_allow_html=True)
+
+# Display MCA Rating
+st.markdown(f"""
+    <div style="{rating_style(mca_rating_definition)}">
+        MCA Rating: <strong>{mca_rating_definition}</strong>
+    </div>
+    <div style="text-align: center; margin-top: 10px;">
+        <strong>MCA Rating Value: {mca_rating}</strong>
+    </div>
+""", unsafe_allow_html=True)
+
 st.write(f'Audit Name: {audit_name}')
 st.write(f'Auditor Name: {auditor_name}')
 
-# Prepare data for CSV
 data = {
     'Auditor Name': [auditor_name],
     'Audit': [audit_name],
@@ -163,9 +208,10 @@ data = {
     'Area Impact Score': [area_impact_score],
     'Key Control Failure Score': [key_control_failure_score_value],
     'Total number of issues': [num_issues],
-    'Action Planning Rating': [total_action_plan_score],
+    'Action Planning Rating': [action_plan_score],
     'Number of self-identified issues': [num_self_identified],
     'CE Rating Value': [ce_rating],
+    'MCA Rating Value': [mca_rating]
 }
 
 df_current = pd.DataFrame(data)
