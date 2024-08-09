@@ -137,7 +137,7 @@ key_control_failure = st.slider(
     key='key_control_failure'
 )
 
-# New management support input outside the issues loop
+# New management support input in the overall scores section
 management_support = st.selectbox(
     'Overall Management support during audit',
     options=[
@@ -200,4 +200,3 @@ def to_csv(df):
 
 # Display CSV download link
 st.markdown(to_csv(df_combined), unsafe_allow_html=True)
-
