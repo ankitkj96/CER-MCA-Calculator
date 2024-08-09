@@ -92,7 +92,6 @@ num_issues = st.number_input('Number of Issues', min_value=1, value=1, key='num_
 
 total_issue_classification_score = 0
 total_action_plan_score = 0
-management_support_score = 0
 num_self_identified = 0
 
 for i in range(num_issues):
@@ -124,17 +123,6 @@ for i in range(num_issues):
         )
         total_action_plan_score += get_action_plan_score(action_plan_defined)
 
-    management_support = st.selectbox(
-        'Management support during audit',
-        options=[
-            'Not supportive and action plans are not provided till issuance of the report',
-            'Somewhat supportive and action plans were shared within defined timelines',
-            'Management was fully supportive and focused on the remediation of the problems on an immediate basis'
-        ],
-        key=f'management_support_{i}'
-    )
-    management_support_score += get_management_support_score(management_support)
-
 st.subheader('Overall Scores for the Audit')
 area_impact = st.selectbox(
     'Area Impact for the entire audit',
@@ -148,6 +136,19 @@ key_control_failure = st.slider(
     value=50,
     key='key_control_failure'
 )
+
+# New management support input outside the issues loop
+management_support = st.selectbox(
+    'Overall Management support during audit',
+    options=[
+        'Not supportive and action plans are not provided till issuance of the report',
+        'Somewhat supportive and action plans were shared within defined timelines',
+        'Management was fully supportive and focused on the remediation of the problems on an immediate basis'
+    ],
+    key='management_support_overall'
+)
+management_support_score = get_management_support_score(management_support)
+
 area_impact_score = area_impact_scores[area_impact]
 key_control_failure_score_value = key_control_failure_score(key_control_failure)
 
