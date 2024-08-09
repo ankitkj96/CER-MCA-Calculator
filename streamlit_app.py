@@ -66,9 +66,9 @@ def get_management_support_score(management_support):
     else:
         return 3
 
-def calculate_mca_rating(management_awareness_score, action_plan_defined_score, management_support_score, ce_score):
+def calculate_mca_rating(management_awareness_score, total_action_plan_score, management_support_score, ce_score):
     if ce_score > 100:
-        return management_awareness_score + action_plan_defined_score + management_support_score
+        return management_awareness_score + total_action_plan_score + management_support_score
     else:
         return management_awareness_score
 
@@ -92,9 +92,8 @@ num_issues = st.number_input('Number of Issues', min_value=1, value=1, key='num_
 
 total_issue_classification_score = 0
 total_action_plan_score = 0
+management_support_score = 0
 num_self_identified = 0
-action_plan_defined = None
-management_support = None
 
 for i in range(num_issues):
     st.subheader(f'Issue {i + 1}')
@@ -123,8 +122,7 @@ for i in range(num_issues):
             ],
             key=f'action_plan_defined_{i}'
         )
-        if action_plan_defined:
-            total_action_plan_score += get_action_plan_score(action_plan_defined)
+        total_action_plan_score += get_action_plan_score(action_plan_defined)
 
     management_support = st.selectbox(
         'Management support during audit',
@@ -133,8 +131,9 @@ for i in range(num_issues):
             'Somewhat supportive and action plans were shared within defined timelines',
             'Management was fully supportive and focused on the remediation of the problems on an immediate basis'
         ],
-        key='management_support'
+        key=f'management_support_{i}'
     )
+    management_support_score += get_management_support_score(management_support)
 
 st.subheader('Overall Scores for the Audit')
 area_impact = st.selectbox(
@@ -161,10 +160,7 @@ percentage_self_identified = (num_self_identified / num_issues) * 100
 management_awareness_score = calculate_management_awareness_score(percentage_self_identified)
 
 # Calculate MCA Rating
-action_plan_score = get_action_plan_score(action_plan_defined) if action_plan_defined else 0
-management_support_score = get_management_support_score(management_support) if management_support else 0
-
-mca_rating = calculate_mca_rating(management_awareness_score, action_plan_score, management_support_score, ce_rating)
+mca_rating = calculate_mca_rating(management_awareness_score, total_action_plan_score, management_support_score, ce_rating)
 mca_rating_definition = get_mca_rating_definition(mca_rating)
 
 # Display CE Rating
@@ -188,8 +184,8 @@ data = {
     'Key Control Failure Score': [key_control_failure_score_value],
     'Total number of issues': [num_issues],
     'Percentage of Self-Identified Issues': [percentage_self_identified],
-    'Action Plan Score': [action_plan_score],
-    'Management Support Score': [management_support_score]
+    'Total Action Plan Score': [total_action_plan_score],
+    'Total Management Support Score': [management_support_score]
 }
 
 df_combined = pd.DataFrame(data)
@@ -203,3 +199,4 @@ def to_csv(df):
 
 # Display CSV download link
 st.markdown(to_csv(df_combined), unsafe_allow_html=True)
+
